@@ -38,11 +38,8 @@ public class AuthService {
     PasswordEncoder encoder;
     @Autowired
     JwtUtils jwtUtils;
-    private final ObjectsValidator validator;
-
-    public AuthService(ObjectsValidator validator) {
-        this.validator = validator;
-    }
+    @Autowired
+    private ObjectsValidator validator;
 
     public void registerUser(SignupRequest signupRequest){
 
@@ -93,6 +90,7 @@ public class AuthService {
         userRepository.save(user);
     }
     public JwtResponse authenticateUser(LoginRequest loginRequest){
+        validator.validate(loginRequest);
         try{
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
