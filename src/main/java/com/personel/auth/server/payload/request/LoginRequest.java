@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public class LoginRequest {
     @NotBlank
-    @Size(min = 3,max = 10)
+    @Size(min = 3,max = 10,message = "the size must be between 3 and 20")
     private String username;
 
     @NotBlank
