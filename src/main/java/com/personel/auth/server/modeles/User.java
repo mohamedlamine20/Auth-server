@@ -10,31 +10,36 @@ import java.util.Set;
 @Entity
 @Table(	name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
+                @UniqueConstraint(columnNames = "username", name = "users_username_ukey"),
+                @UniqueConstraint(columnNames = "email", name = "users_email_ukey")
         })
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(max = 20)
-    private String username;
-
+    @Column(nullable = false)
     @NotBlank
     @Size(max = 50)
+    private String username;
+
+    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 128)
     @Email
     private String email;
 
+    @Column(nullable = false)
     @NotBlank
-    @Size(max = 120)
+    @Size(max = 100)
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(	name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "role_id"),
+            foreignKey = @ForeignKey(name = "user_roles_user_id_fkey"),
+            inverseForeignKey = @ForeignKey(name = "user_roles_role_id_fkey"))
     private Set<Role> roles = new HashSet<>();
 
     public User() {

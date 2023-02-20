@@ -1,5 +1,6 @@
 package com.personel.auth.server.security.jwt;
 
+import com.personel.auth.server.exceptions.InvalidCredentialsException;
 import com.personel.auth.server.security.WebSecurityConfig;
 
 import com.personel.auth.server.security.services.UserDetailsImpl;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -60,10 +62,8 @@ public class JwtUtils {
     public boolean validateJwtToken(String authToken) {
 
         try {
-            //System.out.println(getClaim(authToken, Claims::getExpiration).before(new Date()));
-
+            getClaim(authToken, Claims::getExpiration).before(new Date());
             Jwts.parser().setSigningKey(webSecurityConfig.jwtSecretKey()).parseClaimsJws(authToken);
-
             return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());

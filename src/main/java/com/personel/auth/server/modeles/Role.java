@@ -1,9 +1,13 @@
 package com.personel.auth.server.modeles;
 
 import jakarta.persistence.*;
+import jakarta.validation.Constraint;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "name", name = "roles_name_ukey")
+        })
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

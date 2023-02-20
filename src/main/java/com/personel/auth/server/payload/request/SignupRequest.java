@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.util.Set;
 
 public class SignupRequest {
-    @NotBlank
+    @NotBlank(message = "this field should not be blanc")
     @Size(min = 3, max = 20)
     private String username;
 
