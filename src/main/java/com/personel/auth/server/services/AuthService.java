@@ -41,15 +41,15 @@ public class AuthService {
     @Autowired
     private ObjectsValidator validator;
 
-    public void registerUser(SignupRequest signupRequest){
+    public void registerUser(SignupRequest signupRequest) {
 
-//        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-//            throw new ResourceAlreadyExistsException("Error: Username is already taken!");
-//        }
+        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+            throw new ResourceAlreadyExistsException("Error: Username is already taken!", "username");
+        }
 
-//        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-//            throw new ResourceAlreadyExistsException("Error: Email is already in use!");
-//        }
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            throw new ResourceAlreadyExistsException("Error: Email is already in use!", "email");
+        }
 
         // Create new user's account
         User user = new User(signupRequest.getUsername(),
@@ -90,7 +90,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public JwtResponse authenticateUser(LoginRequest loginRequest){
+    public JwtResponse authenticateUser(LoginRequest loginRequest) {
         //validator.validate(loginRequest);
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -127,8 +127,7 @@ public class AuthService {
     }
 
     public User getLoggedInUser(Principal principal) {
-        User user = userRepository.findByUsername(principal.getName())
+        return userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User is not found"));
-        return user;
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -41,9 +41,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<?> handleException(ResourceAlreadyExistsException e) {
+
+        ErrorModel errorModel = new ErrorModel(e.getField(), "", new ArrayList<>(Collections.singletonList(e.getMessage())));
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(e.getMessage());
+                .body(errorModel);
     }
 
 //    @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,7 +72,7 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleException(MethodArgumentNotValidException exception) {
         List<ErrorModel> errorMessages =
                 exception.getBindingResult().getFieldErrors().stream()
-                        .map(err -> new ErrorModel(err.getField(), err.getRejectedValue(), err.getDefaultMessage())
+                        .map(err -> new ErrorModel(err.getField(), err.getRejectedValue(), Arrays.stream(Objects.requireNonNull(err.getDefaultMessage()).split(",")).toList())
                         ).distinct().collect(Collectors.toList());
         return ErrorResponse.builder().errors(errorMessages)
                 .status(HttpStatus.BAD_REQUEST.value() + "")
