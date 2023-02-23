@@ -1,7 +1,5 @@
 package com.personel.auth.server.payload.request;
 
-import com.personel.auth.server.validators.ValidEmail;
-import com.personel.auth.server.validators.ValidUserName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -10,14 +8,14 @@ import java.util.Set;
 
 public class SignupRequest {
     @NotBlank(message = "this field should not be blanc")
-    @Size(min = 3, max = 20,message = "the size must be between 3 and 20")
-    @ValidUserName
+    @Size(min = 3, max = 20, message = "the size must be between 3 and 20")
+    //@ValidUserName
     private String username;
 
     @NotBlank
     @Size(max = 50)
     @Email
-    @ValidEmail
+    //@ValidEmail
     private String email;
 
     private Set<String> role;
