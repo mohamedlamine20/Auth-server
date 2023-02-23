@@ -2,6 +2,7 @@ package com.personel.auth.server.validators;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+import org.springframework.http.HttpStatus;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -22,4 +23,6 @@ public @interface ValidPassword {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    HttpStatus type();
 }

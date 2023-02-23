@@ -3,14 +3,15 @@ package com.personel.auth.server.payload.request;
 import com.personel.auth.server.validators.ValidPassword;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.http.HttpStatus;
 
 public class LoginRequest {
     @NotBlank
-    @Size(min = 3,max = 10,message = "the size must be between 3 and 20")
+    @Size(min = 3, max = 10, message = "the size must be between 3 and 20")
     private String username;
 
     @NotBlank
-    @ValidPassword
+    @ValidPassword(type = HttpStatus.CONFLICT)
     private String password;
 
     public String getUsername() {

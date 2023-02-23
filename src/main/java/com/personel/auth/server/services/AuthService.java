@@ -42,14 +42,14 @@ public class AuthService {
     private ObjectsValidator validator;
 
     public void registerUser(SignupRequest signupRequest) {
-
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            throw new ResourceAlreadyExistsException("Error: Username is already taken!", "username");
-        }
-
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new ResourceAlreadyExistsException("Error: Email is already in use!", "email");
-        }
+//
+//        if (userRepository.existsByUsername(signupRequest.getUsername())) {
+//            throw new ResourceAlreadyExistsException("Error: Username is already taken!", "username");
+//        }
+//
+//        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+//            throw new ResourceAlreadyExistsException("Error: Email is already in use!", "email");
+//        }
 
         // Create new user's account
         User user = new User(signupRequest.getUsername(),

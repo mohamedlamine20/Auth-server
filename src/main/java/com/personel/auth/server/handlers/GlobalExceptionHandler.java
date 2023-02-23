@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -48,23 +51,49 @@ public class GlobalExceptionHandler {
                 .body(errorModel);
     }
 
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public Map<String, String> handleValidationExceptions(
-//            MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//        ex.getBindingResult().getAllErrors().forEach((error) -> {
-//            String fieldName = ((FieldError) error).getField();
-//            String errorMessage = error.getDefaultMessage();
-//            errors.put(fieldName, errorMessage);
-//        });
-//        return errors;
-//    }
+    @ExceptionHandler(SQLException.class)
+    public ResponseEntity<?> databaseHandlerException(SQLException e) {
+        String sqlState = e.getSQLState();
+        String errorMessage = "An error occurred while accessing the database.";
+        String columnName = null;
+        String rejectedValue = null;
+        switch (sqlState) {
+            case "23505": {
+                // Get the index of the start and end of the column name(s) in the error message
+                int startIndex = e.getMessage().indexOf("(") + 1;
+                int endIndex = e.getMessage().indexOf(")", startIndex);
+                // Extract the column name(s) from the error message
+                columnName = e.getMessage().substring(startIndex, endIndex);
+                // Customize the error message with the column name(s)
+                errorMessage = String.format("A duplicate key value was found for column(s): %s.", columnName);
+                // Duplicate key error
+                // errorMessage = "A record with the same value already exists.";
+                String patternString = "\\(username\\)=\\((.*?)\\)";
+                // Create a pattern object and a matcher object
+                Pattern pattern = Pattern.compile(patternString);
+                Matcher matcher = pattern.matcher(e.getMessage());
+                // Extract the username from the matched substring
+                if (matcher.find()) {
+                    rejectedValue = matcher.group(1);
+                }
+                break;
+            }
+            case "08006": {
+                // Connection error
+                errorMessage = "Unable to connect to the database.";
+                break;
+            }
+
+        }
+        ErrorModel errorModel = new ErrorModel(columnName, rejectedValue, Collections.singletonList(errorMessage));
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorModel);
+    }
 
     /**
      * Method that check against {@code @Valid} Objects passed to controller endpoints
      *
-     * @param exception
      * @return a {@code ErrorResponse}
      */
     @ExceptionHandler(value = MethodArgumentNotValidException.class)

@@ -10,6 +10,7 @@ import java.util.Set;
 public class SignupRequest {
     @NotBlank(message = "this field should not be blanc")
     @Size(min = 3, max = 20, message = "the size must be between 3 and 20")
+    @Pattern(regexp = "[a-zA-Z]+", message = "this user name must have only letters")
     private String username;
 
     @NotBlank
