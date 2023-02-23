@@ -1,9 +1,6 @@
 package com.personel.auth.server.handlers;
 
-import com.personel.auth.server.exceptions.InvalidCredentialsException;
-import com.personel.auth.server.exceptions.ObjectNotValidException;
-import com.personel.auth.server.exceptions.ResourceAlreadyExistsException;
-import com.personel.auth.server.exceptions.ResourceNotFoundException;
+import com.personel.auth.server.exceptions.*;
 import com.personel.auth.server.modeles.ErrorModel;
 import com.personel.auth.server.payload.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -53,19 +50,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SQLException.class)
     public ResponseEntity<?> databaseHandlerException(SQLException e) {
-        String sqlState = e.getSQLState();
-        String errorMessage = "An error occurred while accessing the database.";
-        String columnName = null;
-        String rejectedValue = null;
-        switch (sqlState) {
-            case "23505": {
+        ErrorModel errorModel = new ErrorModel();
+        switch (e.getSQLState()) {
+            case CodesDatabaseException.DUPLICATED: {
                 // Get the index of the start and end of the column name(s) in the error message
                 int startIndex = e.getMessage().indexOf("(") + 1;
                 int endIndex = e.getMessage().indexOf(")", startIndex);
+                String columnName = e.getMessage().substring(startIndex, endIndex);
                 // Extract the column name(s) from the error message
-                columnName = e.getMessage().substring(startIndex, endIndex);
+                errorModel.setFieldName(columnName);
                 // Customize the error message with the column name(s)
-                errorMessage = String.format("A duplicate key value was found for column(s): %s.", columnName);
+                errorModel.setMessageError(Collections.singletonList(String.format("A duplicate key value was found for column(s): %s.", columnName)));
                 // Duplicate key error
                 // errorMessage = "A record with the same value already exists.";
                 String patternString = "\\(username\\)=\\((.*?)\\)";
@@ -74,18 +69,17 @@ public class GlobalExceptionHandler {
                 Matcher matcher = pattern.matcher(e.getMessage());
                 // Extract the username from the matched substring
                 if (matcher.find()) {
-                    rejectedValue = matcher.group(1);
+                    errorModel.setRejectedValue(matcher.group(1));
                 }
                 break;
             }
-            case "08006": {
+            case CodesDatabaseException.SERVER: {
                 // Connection error
-                errorMessage = "Unable to connect to the database.";
+                errorModel.setMessageError(Collections.singletonList("Unable to connect to the database."));
                 break;
             }
-
         }
-        ErrorModel errorModel = new ErrorModel(columnName, rejectedValue, Collections.singletonList(errorMessage));
+        System.out.println(e.getSQLState());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(errorModel);
