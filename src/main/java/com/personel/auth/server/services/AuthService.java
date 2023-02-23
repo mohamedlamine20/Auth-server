@@ -41,14 +41,14 @@ public class AuthService {
     @Autowired
     private ObjectsValidator validator;
 
-    public void registerUser(SignupRequest signupRequest){
+    public void registerUser(SignupRequest signupRequest) {
 
         if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            throw new ResourceAlreadyExistsException("Error: Username is already taken!");
+            throw new ResourceAlreadyExistsException("Error: Username is already taken!", "username");
         }
 
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new ResourceAlreadyExistsException("Error: Email is already in use!");
+            throw new ResourceAlreadyExistsException("Error: Email is already in use!", "email");
         }
 
         // Create new user's account
@@ -89,9 +89,10 @@ public class AuthService {
         user.setRoles(roles);
         userRepository.save(user);
     }
-    public JwtResponse authenticateUser(LoginRequest loginRequest){
-        validator.validate(loginRequest);
-        try{
+
+    public JwtResponse authenticateUser(LoginRequest loginRequest) {
+        //validator.validate(loginRequest);
+        try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
@@ -103,15 +104,16 @@ public class AuthService {
                     .map(item -> item.getAuthority())
                     .collect(Collectors.toList());
 
-            Map<String, Object> extraClaims = new HashMap<String, Object>(){
+            Map<String, Object> extraClaims = new HashMap<String, Object>() {
                 {
-                    put("id",userDetails.getId());
-                    put("username",userDetails.getUsername());
-                    put("email",userDetails.getEmail());
-                    put("roles",roles);            }
+                    put("id", userDetails.getId());
+                    put("username", userDetails.getUsername());
+                    put("email", userDetails.getEmail());
+                    put("roles", roles);
+                }
             };
 
-            String jwt = jwtUtils.generateJwtToken(extraClaims,userDetails);
+            String jwt = jwtUtils.generateJwtToken(extraClaims, userDetails);
 
             return new JwtResponse(jwt,
                     userDetails.getId(),
@@ -119,13 +121,13 @@ public class AuthService {
                     userDetails.getEmail(),
                     roles);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new InvalidCredentialsException("Invalid username or password");
         }
     }
-    public User getLoggedInUser(Principal principal){
-        User user = userRepository.findByUsername(principal.getName())
+
+    public User getLoggedInUser(Principal principal) {
+        return userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User is not found"));
-        return user;
     }
 }
